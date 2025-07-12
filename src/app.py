@@ -3,11 +3,16 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 import time
+import os
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@mysql/notes'
+if os.getenv('ENV') == 'testing':
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@mysql-test/test_notes'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@mysql/notes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 class Note(db.Model):
@@ -24,7 +29,7 @@ def add_color(color_name):
 @app.route('/',  methods=['GET', "POST"])
 def home():
     notes = Note.query.all()
-    #Color options -- default color = #FAEBD7
+    #Color options -- default color = #AntiqueWhite
     color_options = ['Crimson', 'LightBlue', 'Plum', 'LightSeaGreen', 'Ivory']
     selected_color = None
     feedback = []

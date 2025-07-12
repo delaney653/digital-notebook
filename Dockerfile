@@ -13,4 +13,4 @@ COPY --from=first_s /src /usr/local
 COPY src/ ./src
 EXPOSE 3306
 
-CMD ["python", "src/app.py"]
+CMD ["python", "app.py"]

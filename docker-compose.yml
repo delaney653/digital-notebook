@@ -15,6 +15,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    profiles: 
+    - production
+    - '' #used to start service  when 'docker compose up --build' is run
 
   backend:
     build: .
@@ -30,12 +33,16 @@ services:
     - mysql
     volumes:
     - web-logs:/app/logs
+    command: ["python", "src/app.py"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 30s
+    profiles:
+    - production
+    - ''
   mysql:
     image: mysql:latest
     networks:
@@ -54,6 +61,41 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    profiles: 
+    - production
+    - ''
+  #testing services
+  backend-test:
+    build: .
+    environment:
+      ENV: testing
+    depends_on:
+      - mysql-test
+    networks:
+      - backend
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: pytest -v tests/
+    profiles: ["testing"]
+
+  mysql-test:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: test_notes
+    ports:
+      - "3307:3306"
+    tmpfs:
+      - /var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    profiles: ["testing"]
+
 networks:
   frontend:
   backend:
