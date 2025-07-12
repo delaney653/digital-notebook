@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Choose your color!</title>
+</head>
+<body style="background-color: {{ selected_color }};">
+    <div style="margin-top: 45px;">
+        <center><h1>An app that trusts you'll pick the right color...</h1>
+        </center>
+        <form method="POST" action="/add">
+        <label for="color_selection">Choose an option:</label>
+        <select name="note" id="color_selection">
+            {% for option in color_options %}
+                <option value="{{ option }}" {% if option == selected_color %}selected{% endif %}>
+                    {{ option }}
+                </option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+        <hr>
+
+        <h3>Color History:</h3>
+        {% for color, message in color_feedback %}
+        <div>
+            <p>   • {{ color.name }}: {{ message }}</p>
+
+            <form action="/delete/{{color.id}}" method="POST">
+                <button type="submit">Delete from color history</button>
+            </form>
+        </div>
+        {% endfor %}
+        <br><br>
+        <hr>
+        <h3>We all make mistakes sometimes. Let's erase the past.</h3>
+        <form action="/reset" method="POST">
+                <button type="submit">Reset Color History!</button>
+        </form>
+    </div>
+</body>
+</html>
