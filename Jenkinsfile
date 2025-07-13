@@ -16,6 +16,7 @@ pipeline {
                 try {
                     bat 'docker-compose --profile testing up --build --abort-on-container-exit'
                 } finally { //check if this can stop it from hanging
+                    bat 'docker-compose --profile testing down --volumes --remove-orphans'
                     bat 'docker-compose down --volumes --remove-orphans'
                 }  
             }
