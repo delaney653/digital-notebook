@@ -1,6 +1,6 @@
 pipeline {
   agent {
-    dockerContainer {
+    docker{
         image 'docker:24.0.2-cli'
     }
   }
