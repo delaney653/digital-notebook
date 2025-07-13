@@ -18,6 +18,37 @@ pipeline {
         git branch: 'main', url: 'https://github.com/delaney653/digital-notebook'
       }
     }
+    stage('Code Quality: Pylint & Black') {
+        steps {
+            script {
+                echo 'Checking code formating with Black...'
+                // Fail the build if code is not black-formatted
+                bat '''
+                if not black --check . --exclude venv > black.diff 2>&1:
+                    echo ""
+                    echo "Black formatting issues have been detected"
+                    echo "To auto-fix this locally, run: black ."
+                    echo "Diff saved to black.diff"
+                    exit 1
+                else
+                    echo "Black check passed."
+                fi
+                '''
+                echo 'Checking with Pylint...'// Fail the build if pylint score is below 80%
+                bat '''
+                pylint --output-format=json $(for /r %i in (*.py) do @echo %i) > pylint.json || (
+                    echo ""
+                    echo "Code quality issues detected!"
+                    echo "Please review suggestions and aim for a score >= 8.0."
+                    echo "Output saved to pylint.json"
+                    exit 1
+                )
+                echo "Pylint check passed."
+                '''
+            }
+        }
+    }
+
     stage('Run Tests') {
         steps {
             script { 
@@ -31,4 +62,11 @@ pipeline {
         }
     }
   }
+  post {
+        always {
+            recordIssues(tools: [
+            pylint(pattern: 'pylint.json')
+            ])
+        }
+    }
 }
