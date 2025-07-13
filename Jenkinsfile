@@ -16,7 +16,7 @@ pipeline {
     }
     stage('Run Tests') {
         steps {
-            script {
+            script { 
                 try {
                     sh 'docker-compose --profile testing up --build --abort-on-container-exit'
                 } finally { //check if this can stop it from hanging
