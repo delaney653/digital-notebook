@@ -21,15 +21,10 @@ pipeline {
     stage('Code Quality: Pylint & Black') {
         steps {
             script {
-                // Install quality tools using python -m pip
-                bat '''
-                python -m pip install black pylint
-                '''
-                
                 echo 'Checking code formatting with Black...'
                 // Fail the build if code is not black-formatted
                 bat '''
-                python -m black --check . --exclude "venv|.*migrations.*" > black.diff 2>&1
+                docker run --rm -v %CD%:/app -w /app python:3.9 sh -c "pip install -r requirements.txt && black --check . --exclude venv" > black.diff 2>&1
                 if %ERRORLEVEL% neq 0 (
                     echo.
                     echo Black formatting issues have been detected
@@ -44,8 +39,7 @@ pipeline {
                 echo 'Checking with Pylint...'
                 // Fail the build if pylint score is below 8.0
                 bat '''
-                for /f "delims=" %%i in ('dir /s /b *.py ^| findstr /v /i "venv migrations __pycache__"') do echo %%i >> python_files.txt
-                python -m pylint --output-format=json --fail-under=8.0 @python_files.txt > pylint.json 2>&1
+                docker run --rm -v %CD%:/app -w /app python:3.9 sh -c "pip install -r requirements.txt && find . -name '*.py' -not -path './venv/*' -not -path './migrations/*' -not -path './__pycache__/*' | xargs pylint --output-format=json --fail-under=8.0" > pylint.json 2>&1
                 if %ERRORLEVEL% neq 0 (
                     echo.
                     echo Code quality issues detected!
@@ -78,7 +72,6 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'black.diff', allowEmptyArchive: true
             archiveArtifacts artifacts: 'pylint.json', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'python_files.txt', allowEmptyArchive: true
             recordIssues(tools: [
                 pylint(pattern: 'pylint.json')
             ])
