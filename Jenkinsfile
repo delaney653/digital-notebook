@@ -1,9 +1,5 @@
 pipeline {
-  agent {
-    docker{
-        image 'docker:24.0.2-cli'
-    }
-  }
+  agent any
   
   environment{
     VENV = 'venv'
