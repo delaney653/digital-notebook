@@ -17,7 +17,11 @@ pipeline {
     stage('Run Tests') {
         steps {
             script {
-                sh 'docker-compose --profile testing up --build --abort-on-container-exit'
+                try {
+                    sh 'docker-compose --profile testing up --build --abort-on-container-exit'
+                } finally { //check if this can stop it from hanging
+                    sh 'docker-compose down --volumes --remove-orphans'
+                }
             }
         }
     }
