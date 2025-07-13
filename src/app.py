@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 class Note(db.Model):
-    __tablename__ = "notes"
+    __tablename__ = "notes" 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(10000))
 
