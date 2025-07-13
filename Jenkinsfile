@@ -24,7 +24,7 @@ pipeline {
                 echo 'Checking code formating with Black...'
                 // Fail the build if code is not black-formatted
                 bat '''
-                black --check . --exclude venv > black.diff 2>&1
+                black --check . --exclude "venv|.*migrations.*" > black.diff 2>&1
                 if %errorlevel% neq 0 (
                     echo.
                     echo Black formatting issues have been detected
@@ -69,9 +69,11 @@ pipeline {
   }
   post {
         always {
+            archiveArtifacts artifacts: 'black.diff', onlyIfSuccessful: false
             recordIssues(tools: [
-            pylint(pattern: 'pylint.json')
+                pylint(pattern: 'pylint.json')
             ])
         }
     }
+
 }
