@@ -5,6 +5,14 @@ pipeline {
     VENV = 'venv'
   }
   stages{
+    stage('Clean Docker Environment') {
+        steps {
+            script {
+                bat 'docker-compose down --volumes --remove-orphans || true'
+                bat 'docker system prune -f || true'
+            }
+        }
+    }
     stage('Checkout git'){
       steps{
         git branch: 'main', url: 'https://github.com/delaney653/digital-notebook'
