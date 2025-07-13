@@ -57,7 +57,6 @@ pipeline {
     stage('Run Tests') {
         steps {
             script { 
-                 script { 
                 try {
                     bat 'if not exist reports mkdir reports' //make reports directory if it doesn't exist
 
