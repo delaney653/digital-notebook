@@ -15,13 +15,13 @@ class FlaskTests(unittest.TestCase):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@mysql-test/test_notes'
         self.app = app.test_client()
         with app.app_context():
-            for _ in range(5):
+            for _ in range(10):
                 try:
                     db.create_all()
                     break
                 except OperationalError:
                     print("Test database not ready, retrying in 1s...")
-                    time.sleep(1)
+                    time.sleep(2)
             else:
                 raise Exception("Could not connect to test database after 5 tries")
 
