@@ -1,3 +1,5 @@
+"""Used to render the 'Choose your color!' application"""
+
 import time
 import os
 from flask import Flask, render_template, request, redirect
@@ -19,6 +21,9 @@ db = SQLAlchemy(app)
 
 
 class Note(db.Model):
+    """Used to create a table that has 2 columns: an id as a primary key, and
+    the name of the color chosen."""
+
     __tablename__ = "notes"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(10000))
@@ -33,7 +38,7 @@ def add_color(color_name):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    '''Renders home page based on what colors have been previously selected'''
+    """Renders home page based on what colors have been previously selected"""
     notes = Note.query.all()
     # Color options -- default color = #AntiqueWhite
     color_options = ["Crimson", "LightBlue", "Plum", "LightSeaGreen", "Ivory"]
@@ -71,7 +76,7 @@ def home():
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
-    '''Adds a color to the database'''
+    """Adds a color to the database"""
     color_name = request.form.get("note")
     add_color(color_name=color_name)
     return redirect("/")
@@ -79,7 +84,7 @@ def add():
 
 @app.route("/delete/<int:id>", methods=["GET", "POST"])
 def delete(id):
-    '''Deletes a color from the stored colors'''
+    """Deletes a color from the stored colors"""
     color = Note.query.get(id)
     db.session.delete(color)
     db.session.commit()
@@ -88,7 +93,7 @@ def delete(id):
 
 @app.route("/reset", methods=["GET", "POST"])
 def reset_color():
-    '''Clears out database of all previously selected colors'''
+    """Clears out database of all previously selected colors"""
     Note.query.delete()
     db.session.commit()
     return redirect("/")

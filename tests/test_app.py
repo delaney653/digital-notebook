@@ -1,3 +1,5 @@
+"""Used to test different aspects of the Color website"""
+
 import unittest
 import os
 import sys
@@ -11,8 +13,10 @@ from src.app import app, db
 
 
 class FlaskTests(unittest.TestCase):
+    """Using unit tests to test different aspects of the Color website"""
+
     def setUp(self):
-        '''Sets up connection to testing database'''
+        """Sets up connection to testing database"""
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_DATABASE_URI"] = (
             "mysql+pymysql://root:password@mysql-test/test_notes"
@@ -27,7 +31,9 @@ class FlaskTests(unittest.TestCase):
                     print("Test database not ready, retrying in 1s...")
                     time.sleep(2)
             else:
-                raise OperationalError("Could not connect to test database after 5 tries")
+                raise OperationalError(
+                    "Could not connect to test database after 5 tries"
+                )
 
     def tearDown(self):
         # Cleans up database
@@ -36,7 +42,7 @@ class FlaskTests(unittest.TestCase):
             db.drop_all()
 
     def test_home_page_data(self):
-        '''Testing if title and color render correctly'''
+        """Testing if title and color render correctly"""
         response = self.app.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Choose your color!", response.data)
