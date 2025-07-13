@@ -57,8 +57,19 @@ pipeline {
     stage('Run Tests') {
         steps {
             script { 
+                 script { 
                 try {
-                    bat 'docker-compose --profile testing up --build --abort-on-container-exit'
+                    bat 'if not exist reports mkdir reports' //make reports directory if it doesn't exist
+
+                    bat '''
+                    docker-compose --profile testing up --build --abort-on-container-exit
+                    
+                    REM Copy test reports from container to host
+                    for /f %%i in ('docker-compose --profile testing ps -q') do (
+                        docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "No JUnit XML found"
+                        docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "No coverage XML found"
+                    )
+                    '''
                 } finally { //check if this can stop it from hanging
                     bat 'docker-compose --profile testing down --volumes --remove-orphans'
                     bat 'docker-compose down --volumes --remove-orphans'
@@ -67,14 +78,19 @@ pipeline {
         }
     }
   }
-//   post {
-//         always {
-//             archiveArtifacts artifacts: 'black.diff', allowEmptyArchive: true
-//             archiveArtifacts artifacts: 'pylint.json', allowEmptyArchive: true
-//             recordIssues(tools: [
-//                 pylint(pattern: 'pylint.json')
-//             ])
-//         }
-//     }
+  post {
+        always {
+            archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
+            publishTestResults testResultsPattern: 'reports/junit.xml', allowEmptyResults: true
+            
+            publishCoverage adapters: [
+                coberturaAdapter('reports/coverage.xml')
+            ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+            
+            recordIssues(tools: [
+                pylint(pattern: 'pylint.json')
+            ])
+        }
+    }
 
 }
