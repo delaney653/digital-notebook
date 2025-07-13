@@ -1,9 +1,6 @@
 pipeline {
   agent any
   
-  triggers {
-        githubPush()
-    }
   environment{
     VENV = 'venv'
   }
