@@ -21,13 +21,15 @@ pipeline {
     stage('Code Quality: Pylint & Black') {
         steps {
             script {
+                // Install quality tools using python -m pip
                 bat '''
-                pip install black pylint
+                python -m pip install black pylint
                 '''
                 
                 echo 'Checking code formatting with Black...'
+                // Fail the build if code is not black-formatted
                 bat '''
-                black --check . --exclude "venv|.*migrations.*" > black.diff 2>&1
+                python -m black --check . --exclude "venv|.*migrations.*" > black.diff 2>&1
                 if %ERRORLEVEL% neq 0 (
                     echo.
                     echo Black formatting issues have been detected
@@ -43,7 +45,7 @@ pipeline {
                 // Fail the build if pylint score is below 8.0
                 bat '''
                 for /f "delims=" %%i in ('dir /s /b *.py ^| findstr /v /i "venv migrations __pycache__"') do echo %%i >> python_files.txt
-                pylint --output-format=json --fail-under=8.0 @python_files.txt > pylint.json 2>&1
+                python -m pylint --output-format=json --fail-under=8.0 @python_files.txt > pylint.json 2>&1
                 if %ERRORLEVEL% neq 0 (
                     echo.
                     echo Code quality issues detected!
