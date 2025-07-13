@@ -16,7 +16,7 @@ class FlaskTests(unittest.TestCase):
         self.app = app.test_client()
         with app.app_context():
             for _ in range(10):
-                try: 
+                try:  
                     db.create_all()
                     break
                 except OperationalError:
