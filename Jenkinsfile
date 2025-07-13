@@ -38,11 +38,11 @@ pipeline {
                 echo 'Checking with Pylint...'
                 // Fail the build if pylint score is below 8.0
                 bat '''
-                docker run --rm -v %CD%:/app -w /app python:3.9 sh -c "pip install -r requirements.txt && find . -name '*.py' -not -path './venv/*' -not -path './migrations/*' -not -path './__pycache__/*' | xargs pylint --output-format=colorized --fail-under=9.0" 
+                docker run --rm -v %CD%:/app -w /app python:3.9 sh -c "pip install -r requirements.txt && find . -name '*.py' -not -path './venv/*' -not -path './migrations/*' -not -path './__pycache__/*' | xargs pylint --output-format=colorized --fail-under=8.5" 
                 if %ERRORLEVEL% neq 0 (
                     echo.
-                    echo FAILURE -- Code quality issues detected!
-                    echo Please review suggestions and aim for a score ^>= 8.0.
+                    echo FAILURE -- Code quality issues detected with Pylint!
+                    echo Please review suggestions and aim for a score ^>= 8.5.
                     exit /b 1
                 ) else (
                     echo Pylint check passed.

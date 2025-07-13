@@ -7,11 +7,12 @@ from sqlalchemy.exc import OperationalError
 os.environ["ENV"] = "testing"
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.app import app, db, Note
+from src.app import app, db
 
 
 class FlaskTests(unittest.TestCase):
     def setUp(self):
+        '''Sets up connection to testing database'''
         app.config["TESTING"] = True
         app.config["SQLALCHEMY_DATABASE_URI"] = (
             "mysql+pymysql://root:password@mysql-test/test_notes"
@@ -26,15 +27,16 @@ class FlaskTests(unittest.TestCase):
                     print("Test database not ready, retrying in 1s...")
                     time.sleep(2)
             else:
-                raise Exception("Could not connect to test database after 5 tries")
+                raise OperationalError("Could not connect to test database after 5 tries")
 
     def tearDown(self):
-        # Cleans DB
+        # Cleans up database
         with app.app_context():
             db.session.remove()
             db.drop_all()
 
     def test_home_page_data(self):
+        '''Testing if title and color render correctly'''
         response = self.app.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Choose your color!", response.data)
