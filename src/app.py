@@ -21,7 +21,7 @@ class Note(db.Model):
     name = db.Column(db.String(10000))
 
 def add_color(color_name):
-    """Add a color to the database"""
+    """Add a color to the database""" 
     new_note = Note(name=color_name)
     db.session.add(new_note)
     db.session.commit()
