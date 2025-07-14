@@ -59,7 +59,7 @@ pipeline {
                         bat 'if not exist reports mkdir reports'
 
                         bat '''
-                        docker-compose --profile testing up --build --abort-on-container-exit
+                        docker-compose --profile testing up --build -d
                         '''
                         
                         echo "Copying test artifacts from container..."
