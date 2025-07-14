@@ -133,7 +133,7 @@ pipeline {
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
             archiveArtifacts artifacts: 'artifacts/**', allowEmptyArchive: true
             
-            junit testResultsPattern: 'reports/junit.xml', allowEmptyResults: true
+            junit testResults: 'reports/junit.xml', allowEmptyResults: true
             
             
             bat 'docker-compose down --volumes --remove-orphans || true'
