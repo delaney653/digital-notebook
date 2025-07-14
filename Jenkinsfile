@@ -49,47 +49,127 @@ pipeline {
                     echo Pylint check passed.
                 )
                 '''
-
             }
         }
     }
 
-    stage('Run Tests') {
-        steps {
-            script { 
-                try {
-                    bat 'if not exist reports mkdir reports' //make reports directory if it doesn't exist
+    
+        stage('Run Tests') {
+            steps {
+                script { 
+                    try {
+                        bat 'if not exist reports mkdir reports'
 
-                    bat '''
-                    docker-compose --profile testing up --build --abort-on-container-exit
-                    
-                    REM Copy test reports from container to host
-                    for /f %%i in ('docker-compose --profile testing ps -q') do (
-                        docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "No JUnit XML found"
-                        docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "No coverage XML found"
-                    )
-                    '''
-                } finally { //check if this can stop it from hanging
-                    bat 'docker-compose --profile testing down --volumes --remove-orphans'
-                    bat 'docker-compose down --volumes --remove-orphans'
-                }  
+                        bat '''
+                        docker-compose --profile testing up --build --abort-on-container-exit
+                        '''
+                        
+                        bat '''
+                        echo "Copying test artifacts from container..."
+                        for /f %%i in ('docker-compose --profile testing ps -q') do (
+                            docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "Warning: No JUnit XML found"
+                            docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "Warning: No coverage XML found"
+                            docker cp %%i:/app/htmlcov ./reports/htmlcov 2>nul || echo "Warning: No HTML coverage report found"
+                        )
+                        '''
+                        
+                        // verify reports were created
+                        bat '''
+                        if not exist reports\\junit.xml (
+                            echo "FAILURE -- No test results found!"
+                            exit /b 1
+                        )
+                        if not exist reports\\coverage.xml (
+                            echo "FAILURE -- No coverage report found!"
+                            exit /b 1
+                        )
+                        echo "Test reports generated successfully!"
+                        '''
+                        
+                    } catch (Exception e) {
+                        echo "Test stage failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    } finally {
+                        bat 'docker-compose --profile testing down --volumes --remove-orphans || true'
+                        bat 'docker-compose down --volumes --remove-orphans || true'
+                    }
+                }
+            }
+        }
+        
+        stage('Build Artifacts') {
+            steps {
+                script {
+                    echo 'Building application artifacts...'
+                    try {
+                        bat 'docker-compose build backend'
+                        
+                        bat '''
+                        echo "Verifying build artifacts..."
+                        docker images | findstr backend && echo "Docker image built successfully" || (
+                            echo "FAILURE -- Docker image not found!"
+                            exit /b 1
+                        )
+                        '''
+                        
+                        bat '''
+                        if not exist artifacts mkdir artifacts
+                        echo "Exporting Docker images as build artifacts..."
+                        docker save -o artifacts/backend-image.tar digital-notebook-backend:latest || echo "Could not export backend image"
+                        '''
+                        
+                        echo 'Build artifacts generated successfully!'
+                        
+                    } catch (Exception e) {
+                        echo "Build stage failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
+                }
             }
         }
     }
-  }
-  post {
+    
+    post {
         always {
+            echo 'Archiving artifacts and publishing reports...'
+            
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'artifacts/**', allowEmptyArchive: true
+            
             publishTestResults testResultsPattern: 'reports/junit.xml', allowEmptyResults: true
             
-            publishCoverage adapters: [
-                coberturaAdapter('reports/coverage.xml')
-            ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+            script {
+                if (fileExists('reports/htmlcov/index.html')) {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'reports/htmlcov',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
             
-            recordIssues(tools: [
-                pylint(pattern: 'pylint.json')
-            ])
+            bat 'docker-compose down --volumes --remove-orphans || true'
+            bat 'docker system prune -f || true'
         }
+    }
+
+  failure {
+        echo 'Pipeline failed! Check the logs above for details.'
+    }
+        
+  success {
+        echo 'Pipeline completed successfully!'
+        echo 'All checks passed:'
+        echo '- Code formatting (Python Black)'
+        echo '- Code quality (Pylint >= 8.0)'
+        echo '- All tests passing'
+        echo '- Coverage >= 80%'
+        echo '- Build artifacts generated'
     }
 
 }

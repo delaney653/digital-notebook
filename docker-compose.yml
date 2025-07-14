@@ -76,7 +76,7 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: pytest -v tests/
+    command: sh -c "pip install pytest-cov && pytest --junitxml=junit.xml --cov=. --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-fail-under=80 -v tests/"
     profiles: ["testing"]
 
   mysql-test:
