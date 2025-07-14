@@ -156,20 +156,19 @@ pipeline {
             bat 'docker-compose down --volumes --remove-orphans || true'
             bat 'docker system prune -f || true'
         }
-    }
-
-  failure {
-        echo 'Pipeline failed! Check the logs above for details.'
-    }
-        
-  success {
-        echo 'Pipeline completed successfully!'
-        echo 'All checks passed:'
-        echo '- Code formatting (Python Black)'
-        echo '- Code quality (Pylint >= 8.0)'
-        echo '- All tests passing'
-        echo '- Coverage >= 80%'
-        echo '- Build artifacts generated'
+        failure {
+            echo 'Pipeline failed! Check the logs above for details.'
+        }
+            
+        success {
+            echo 'Pipeline completed successfully!'
+            echo 'All checks passed:'
+            echo '- Code formatting (Python Black)'
+            echo '- Code quality (Pylint >= 8.0)'
+            echo '- All tests passing'
+            echo '- Coverage >= 80%'
+            echo '- Build artifacts generated'
+        }
     }
 
 }
