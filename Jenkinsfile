@@ -110,7 +110,7 @@ pipeline {
                     
                     bat '''
                     if not exist artifacts mkdir artifacts
-                    echo "Exporting Docker images as build artifacts..."
+                    echo "Exporting build artifacts..."
                     docker save -o artifacts/backend-image.tar digital-notebook-backend:latest || echo "Could not export backend image"
                     '''
                     
@@ -149,7 +149,7 @@ pipeline {
             echo '- Code formatting (Python Black)'
             echo '- Code quality (Pylint >= 8.0)'
             echo '- All tests passing'
-            echo '- Coverage >= 80%'
+            echo '- Coverage >= 95%'
             echo '- Build artifacts generated'
         }
     }
