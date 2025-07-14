@@ -148,7 +148,7 @@ pipeline {
                         keepAll: true,
                         reportDir: 'reports/htmlcov',
                         reportFiles: 'index.html',
-                        reportName: 'Coverage Report'
+                        reportName: 'Coverage Report' 
                     ])
                 }
             }
