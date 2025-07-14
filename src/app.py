@@ -17,7 +17,7 @@ else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:password@mysql/notes"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app) 
 
 
 class Note(db.Model):
@@ -48,7 +48,7 @@ def home():
     for note in notes:
         color = note.name.lower()
         if color == "crimson":
-            feedback.append("You've chosen the best color.")
+            feedback.append("You've chosen the best color. I vote we stick with this color!")
         else:
             non_red_count += 1
             if non_red_count == 1:
