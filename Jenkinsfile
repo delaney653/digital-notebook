@@ -41,7 +41,7 @@ pipeline {
                 docker run --rm -v %CD%:/app -w /app python:3.9 sh -c "pip install -r requirements.txt && find . -name '*.py' -not -path './venv/*' -not -path './migrations/*' -not -path './__pycache__/*' | xargs pylint --output-format=colorized --fail-under=8.0" 
                 if %ERRORLEVEL% neq 0 (
                     echo.
-                    echo FAILURE -- Code quality issues detected with Pylint!\
+                    echo FAILURE -- Code quality issues detected with Pylint!
                     echo To fix this locally run: pylint <file_name> in the appropriate directoy.
                     echo Please review suggestions and aim for a score ^>= 8.0.
                     exit /b 1
@@ -52,9 +52,7 @@ pipeline {
             }
         }
     }
-
-    
-        stage('Run Tests') {
+    stage('Run Tests') {
             steps {
                 script { 
                     try {
@@ -64,13 +62,11 @@ pipeline {
                         docker-compose --profile testing up --build --abort-on-container-exit
                         '''
                         
-                        bat '''
                         echo "Copying test artifacts from container..."
-                        for /f %%i in ('docker-compose --profile testing ps -q') do (
-                            docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "Warning: No JUnit XML found"
-                            docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "Warning: No coverage XML found"
-                            docker cp %%i:/app/htmlcov ./reports/htmlcov 2>nul || echo "Warning: No HTML coverage report found"
-                        )
+                        bat '''
+                        for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "Warning: No JUnit XML found"
+                        for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "Warning: No coverage XML found"
+                        for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/htmlcov ./reports/htmlcov 2>nul || echo "Warning: No HTML coverage report found"
                         '''
                         
                         // verify reports were created
@@ -96,39 +92,39 @@ pipeline {
                     }
                 }
             }
-        }
+    }
         
-        stage('Build Artifacts') {
-            steps {
-                script {
-                    echo 'Building application artifacts...'
-                    try {
-                        bat 'docker-compose build backend'
-                        
-                        bat '''
-                        echo "Verifying build artifacts..."
-                        docker images | findstr backend && echo "Docker image built successfully" || (
-                            echo "FAILURE -- Docker image not found!"
-                            exit /b 1
-                        )
-                        '''
-                        
-                        bat '''
-                        if not exist artifacts mkdir artifacts
-                        echo "Exporting Docker images as build artifacts..."
-                        docker save -o artifacts/backend-image.tar digital-notebook-backend:latest || echo "Could not export backend image"
-                        '''
-                        
-                        echo 'Build artifacts generated successfully!'
-                        
-                    } catch (Exception e) {
-                        echo "Build stage failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        throw e
-                    }
+    stage('Build Artifacts') {
+        steps {
+            script {
+                echo 'Building application artifacts...'
+                try {
+                    bat 'docker-compose build backend'
+                    
+                    bat '''
+                    echo "Verifying build artifacts..."
+                    docker images | findstr backend && echo "Docker image built successfully" || (
+                        echo "FAILURE -- Docker image not found!"
+                        exit /b 1
+                    )
+                    '''
+                    
+                    bat '''
+                    if not exist artifacts mkdir artifacts
+                    echo "Exporting Docker images as build artifacts..."
+                    docker save -o artifacts/backend-image.tar digital-notebook-backend:latest || echo "Could not export backend image"
+                    '''
+                    
+                    echo 'Build artifacts generated successfully!'
+                    
+                } catch (Exception e) {
+                    echo "Build stage failed: ${e.getMessage()}"
+                    currentBuild.result = 'FAILURE'
+                    throw e
                 }
             }
         }
+    }
     }
     
     post {
