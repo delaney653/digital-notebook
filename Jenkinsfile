@@ -66,7 +66,6 @@ pipeline {
                         bat '''
                         for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/junit.xml ./reports/junit.xml 2>nul || echo "Warning: No JUnit XML found"
                         for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/coverage.xml ./reports/coverage.xml 2>nul || echo "Warning: No coverage XML found"
-                        for /f %%i in ('docker-compose --profile testing ps -q') do docker cp %%i:/app/htmlcov ./reports/htmlcov 2>nul || echo "Warning: No HTML coverage report found"
                         '''
                         
                         // verify reports were created
