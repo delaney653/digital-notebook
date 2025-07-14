@@ -133,21 +133,6 @@ pipeline {
             archiveArtifacts artifacts: 'reports/**', allowEmptyArchive: true
             archiveArtifacts artifacts: 'artifacts/**', allowEmptyArchive: true
             
-            publishTestResults testResultsPattern: 'reports/junit.xml', allowEmptyResults: true
-            
-            script {
-                if (fileExists('reports/htmlcov/index.html')) {
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'reports/htmlcov',
-                        reportFiles: 'index.html',
-                        reportName: 'Coverage Report'
-                    ])
-                }
-            }
-            
             bat 'docker-compose down --volumes --remove-orphans || true'
             bat 'docker system prune -f || true'
         }
