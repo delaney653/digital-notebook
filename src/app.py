@@ -49,7 +49,7 @@ def home():
         color = note.name.lower()
         if color == "crimson":
             feedback.append(
-                "You've chosen the best color. I vote we stick with this color!"
+                "You've chosen the best color. "
             )
         else:
             non_red_count += 1
